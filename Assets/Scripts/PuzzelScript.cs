@@ -5,17 +5,20 @@ using UnityEngine;
 using UnityEngine.UI;
 public class PuzzelScript : MonoBehaviour
 {
-    public Image puzzel;
+    public GameManager gameManager;
+
+    public Image puzzelScreen;
     public string puzzelAnswer;
 
     public bool processingAnswer = false;
     public bool isSolved;
-    public int fails = 0;
+    //public int fails = 0;
     public GameObject door;
-    public GameObject bonusDoor;
+   // public GameObject bonusDoor;
     public AudioSource audioSource;
     public AudioClip failSound;
     public AudioClip correctSound;
+    public ParticleSystem explosionParticle;
 
     public float waitTimeAfterCorrect=2.0f;
     public float waitTimeAfterWrong=4.0f;
@@ -24,6 +27,7 @@ public class PuzzelScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gameManager = FindObjectOfType<GameManager>();
         audioSource = GetComponent<AudioSource>();
     }
     void Update()
@@ -32,14 +36,17 @@ public class PuzzelScript : MonoBehaviour
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (!isSolved)
+        if (!isSolved&&other.CompareTag("Player"))
         {
-            puzzel.gameObject.SetActive(true);
+            puzzelScreen.gameObject.SetActive(true);
         }
     }
     private void OnTriggerExit(Collider other)
     {
-        puzzel.gameObject.SetActive(false);
+        if (other.CompareTag("Player"))
+        {
+            puzzelScreen.gameObject.SetActive(false);
+        }
     }
     public bool GiveAnswer(string givenAnswer)
     {
@@ -54,27 +61,17 @@ public class PuzzelScript : MonoBehaviour
         else
         {
             StartCoroutine(ProccesWrongAnswer());
-         
-            fails += 1;
+            gameManager.addFail();
             return false;
         }
 
     }
-    public void endPuzzel()
-    {
-        //disables puzzel screen
-        puzzel.gameObject.SetActive(false);
-        //Opens door
-        door.SetActive(false);
-        if (fails == 0)
-        {
-            bonusDoor.gameObject.SetActive(false);
-        }
 
-    }
     private IEnumerator  ProccesWrongAnswer()
     {
+
         audioSource.PlayOneShot(failSound);
+        explosionParticle.Play();
         yield return new WaitForSeconds(waitTimeAfterWrong);
         processingAnswer = false;
 
@@ -87,5 +84,16 @@ public class PuzzelScript : MonoBehaviour
         processingAnswer = false;
         endPuzzel();
     }
-    
+    public void endPuzzel()
+    {
+        //disables puzzel screen
+        puzzelScreen.gameObject.SetActive(false);
+        //Opens door
+        door.SetActive(false);
+        //if (fails == 0)
+        //{
+        //    bonusDoor.gameObject.SetActive(false);
+        //}
+
+    }
 }
