@@ -3,37 +3,38 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System;
 
 public class GameManager : MonoBehaviour
-{ 
-    
+{
+    [Header("Drag these in the inspector")]
     public TextMeshProUGUI levelCompleteText;
     public TextMeshProUGUI failsText;
-    public TextMeshProUGUI coinsText;
-    public TextMeshProUGUI coinsText2;
+    public TextMeshProUGUI coinsTextEndLevel;
+    public TextMeshProUGUI coinsTextOverlay;
 
     public GameObject levelCompleteScreen;
     public AudioClip levelCompleteSound;
     public Image gameOverScreen;
     public AudioClip gameOverSound;
 
+    public GameObject player;
 
     private int totalCoins = 10;
-    public bool isLevelOver;
-    public int fails;
+    [Space(20)]
     public int coinsCollected;
- 
-    
-    public MoveFloor moveFloor;
-    public PlayerController playerController;
-    public AudioSource playerAudioSource;
-    public float floorSpeedUp = 0.25f;
+    public int fails;
+    public bool isLevelOver;
+
+    //public MoveFloor moveFloorScript;
+    //public float floorSpeedUp = 0.25f;
+    ///For matching color of the player to the answers in puzzel
+    public enum colorAnswers { Cyan, Orange, Yellow };
+    public Item heldItem;
     // Start is called before the first frame update
     void Start()
     {
-        moveFloor=FindObjectOfType<MoveFloor>();
-        playerController = FindObjectOfType<PlayerController>();
-        playerAudioSource = playerController.GetComponent<AudioSource>();
+        // moveFloorScript=FindObjectOfType<MoveFloor>();
     }
 
     // Update is called once per frame
@@ -47,7 +48,7 @@ public class GameManager : MonoBehaviour
     {
         //This bool will stop the world and player from moving
         isLevelOver = true;
-        playerAudioSource.PlayOneShot(levelCompleteSound);
+        player.GetComponent<AudioSource>().PlayOneShot(levelCompleteSound);
         levelCompleteScreen.SetActive(true);
     }
 
@@ -55,21 +56,21 @@ public class GameManager : MonoBehaviour
     {
         fails++;
         //Increase the floor speed when giving a false answer
-        moveFloor.speed++;
+        //moveFloorScript.speed++;
         failsText.text = "Fails: " + fails;
 ;    }
     public void addCoin()
     {
         coinsCollected++;
-        coinsText.text = "Coins: " + coinsCollected+"/"+totalCoins;
-        coinsText2.text = ""+coinsCollected;
+        coinsTextEndLevel.text = "Coins: " + coinsCollected+"/"+totalCoins;
+        coinsTextOverlay.text = ""+coinsCollected;
 
 
     }
     public void setGameOver()
     {
         isLevelOver = true;
-        playerAudioSource.PlayOneShot(gameOverSound);
+        player.GetComponent<AudioSource>().PlayOneShot(gameOverSound);
         gameOverScreen.gameObject.SetActive(true);
     }
     public void pause()
@@ -81,5 +82,18 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1;
 
+    }
+
+    public void equipItem(Item item)
+    {
+        if (heldItem!= null)
+        {
+            heldItem.gameObject.SetActive(true);
+        }
+
+        item.gameObject.SetActive(false);
+        heldItem = item;
+        Material Player_Material = player.GetComponent<Renderer>().material;
+        Player_Material.color = item.gameObject.GetComponent<Renderer>().material.color;
     }
 }

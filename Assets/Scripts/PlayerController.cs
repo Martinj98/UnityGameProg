@@ -6,7 +6,6 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public Vector3 spawnPos;
-    public float defaultmovespeed;
     public float movespeed;
     public float jumpforce;
     public CharacterController controller;
@@ -14,14 +13,12 @@ public class PlayerController : MonoBehaviour
     public float gravityScale;
 
     public GameManager gameManager;
-    // public GameObject cameraObject;
 
     // Start is called before the first frame update
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
         controller = GetComponent<CharacterController>();
-        //cameraObject = GameObject.Find("Main Camera");
     }
     // Update is called once per frame
     void Update()
@@ -48,7 +45,7 @@ public class PlayerController : MonoBehaviour
 
             }
             //Applying gravity and moving the charactercontroller
-            movedirection.y += Physics.gravity.y * gravityScale * Time.deltaTime;//TODO time deltatime
+            movedirection.y += Physics.gravity.y * gravityScale * Time.deltaTime;
             controller.Move(movedirection * Time.deltaTime);
 
             //If the player is falling below 0 reset

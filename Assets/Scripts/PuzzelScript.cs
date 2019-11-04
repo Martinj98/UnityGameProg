@@ -1,42 +1,55 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 public class PuzzelScript : MonoBehaviour
 {
+    public PlayerController playerController;
     public GameManager gameManager;
-
-    public Image puzzelScreen;
-    public string puzzelAnswer;
-
-    public bool processingAnswer = false;
-    public bool isSolved;
-    //public int fails = 0;
-    public GameObject door;
-   // public GameObject bonusDoor;
     public AudioSource audioSource;
+
     public AudioClip failSound;
     public AudioClip correctSound;
     public ParticleSystem explosionParticle;
 
-    public float waitTimeAfterCorrect=2.0f;
-    public float waitTimeAfterWrong=4.0f;
+    public Image puzzelScreen;
+    public GameManager.colorAnswers puzzelAnswer;
 
+    public bool processingAnswer = false;
+    public bool isSolved;
+
+    public GameObject puzzelPaal;
+    public GameObject puzzelFloor;
+    public GameObject puzzelDoor;
+
+ //   public float waitTimeAfterCorrect = 2.0f;
+    public float waitTimeAfterWrong = 4.0f;
 
     // Start is called before the first frame update
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
         audioSource = GetComponent<AudioSource>();
+        playerController = FindObjectOfType<PlayerController>();
     }
     void Update()
     {
-
+        if (puzzelScreen.gameObject.activeSelf)
+        {
+            if (Input.GetKeyDown(KeyCode.E) && !processingAnswer)
+            {
+                if (gameManager.heldItem != null)
+                {
+                    GiveAnswer(gameManager.heldItem);
+                }
+            }
+        }
     }
     private void OnTriggerEnter(Collider other)
     {
-        if (!isSolved&&other.CompareTag("Player"))
+        if (!isSolved && other.CompareTag("Player"))
         {
             puzzelScreen.gameObject.SetActive(true);
         }
@@ -48,52 +61,53 @@ public class PuzzelScript : MonoBehaviour
             puzzelScreen.gameObject.SetActive(false);
         }
     }
-    public bool GiveAnswer(string givenAnswer)
+    public bool GiveAnswer(Item givenItem)
     {
         processingAnswer = true;
-        Debug.Log("Answer Given" + givenAnswer);
-        if (puzzelAnswer == givenAnswer)
+        if (puzzelAnswer == givenItem.itemAnswer)
         {
-            isSolved = true;
-            StartCoroutine(ProccesRightAnswer());
+            StartCoroutine(ProccesRightAnswer(givenItem.color));
             return true;
         }
         else
         {
             StartCoroutine(ProccesWrongAnswer());
-            gameManager.addFail();
             return false;
         }
-
     }
 
-    private IEnumerator  ProccesWrongAnswer()
+    private IEnumerator ProccesWrongAnswer()
     {
-
+        gameManager.addFail();
         audioSource.PlayOneShot(failSound);
         explosionParticle.Play();
         yield return new WaitForSeconds(waitTimeAfterWrong);
         processingAnswer = false;
 
-
     }
-    private IEnumerator ProccesRightAnswer()
+    private IEnumerator ProccesRightAnswer(Color givenCol)
     {
+        isSolved = true;
         audioSource.PlayOneShot(correctSound);
-        yield return new WaitForSeconds(waitTimeAfterCorrect);
-        processingAnswer = false;
-        endPuzzel();
-    }
-    public void endPuzzel()
-    {
-        //disables puzzel screen
+   
+        GameObject[] puzzelObjects= { puzzelPaal,puzzelFloor,puzzelDoor };
+        //Change the color of each object 
+        foreach (GameObject puzzelobject in puzzelObjects)
+        {
+            StartCoroutine(puzzelobject.GetComponent<colorChanger>().updateColor(givenCol));
+            while (puzzelobject.GetComponent<colorChanger>().isChanging)
+            {
+                yield return new WaitForSeconds(0.01f);
+            }
+        }
+        //disable the door so the player can progress
+        puzzelDoor.GetComponent<colorChanger>().disableGameobject();
+        while (puzzelDoor.GetComponent<colorChanger>().isChanging)
+        {
+            yield return new WaitForSeconds(0.01f);
+        }
+        puzzelDoor.SetActive(false);
         puzzelScreen.gameObject.SetActive(false);
-        //Opens door
-        door.SetActive(false);
-        //if (fails == 0)
-        //{
-        //    bonusDoor.gameObject.SetActive(false);
-        //}
-
+        processingAnswer = false;
     }
 }

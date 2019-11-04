@@ -17,7 +17,6 @@ public class PowerUp : MonoBehaviour
     {
         playerController = FindObjectOfType<PlayerController>();
         gameManager = gameManager = FindObjectOfType<GameManager>();
-
     }
 
     // Update is called once per frame

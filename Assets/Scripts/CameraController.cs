@@ -8,8 +8,8 @@ public class CameraController : MonoBehaviour
 
     public Transform target;
     public float distance = 5.0f;
-    public float xSpeed = 120.0f;
-    public float ySpeed = 120.0f;
+    public float xSpeed = 100f;
+    public float ySpeed = 360f;
 
     public float yMinLimit = -20f;
     public float yMaxLimit = 80f;
@@ -22,13 +22,12 @@ public class CameraController : MonoBehaviour
     float x = 0.0f;
     float y = 0.0f;
 
-    // Use this for initialization
     void Start()
     {
         Vector3 angles = transform.eulerAngles;
+        ///x and y are flipped because the mouse moves in 2d space
         x = angles.y;
         y = angles.x;
-
         //rigidbody = GetComponent<Rigidbody>();
 
         //// Make the rigid body not change rotation
@@ -43,20 +42,19 @@ public class CameraController : MonoBehaviour
         //If the right mouse-button is held rotate the camera bases on X and Y mouse positions
         if (Input.GetMouseButton(1))
         {
-            x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
+            x += Input.GetAxis("Mouse X") * xSpeed * 0.02f;
             y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
         }
-        //follow the player if assigned
+        //follow the target if assigned
         if (target)
         {
-         
-
             y = ClampAngle(y, yMinLimit, yMaxLimit);
 
             Quaternion rotation = Quaternion.Euler(y, x, 0);
 
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 5, distanceMin, distanceMax);
 
+            ///Use raycasts to disable looking through objects
             //RaycastHit hit;
             //if (Physics.Linecast(target.position, transform.position, out hit))
             //{
@@ -68,6 +66,7 @@ public class CameraController : MonoBehaviour
 
             transform.rotation = rotation;
             transform.position = position;
+
             //Set player to rotate on the y axis
             target.transform.rotation = Quaternion.Euler(0, x, 0);
 
