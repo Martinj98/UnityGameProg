@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static SceneController;
 
 public class MoveFloor : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class MoveFloor : MonoBehaviour
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
+        Debug.Log(StaticClass.CrossSceneInformation+" = SELECTED Difficulty number");
+        speed = StaticClass.CrossSceneInformation;
     }
 
     // Update is called once per frame
